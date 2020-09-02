@@ -3,6 +3,7 @@
  *
  * vim: ts=4 sw=4
  *
+ * Simple Dual Port RAM, inferred.
  *
  * Copyright (C) 2019-2020  Sylvain Munaut <tnt@246tNt.com>
  * SPDX-License-Identifier: CERN-OHL-P-2.0

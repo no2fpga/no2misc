@@ -3,7 +3,10 @@
  *
  * vim: ts=4 sw=4
  *
+ * Cross-clock domain helper for strobes.
  *
+ * Strobe interval _has_ to be much longer than several of the slowest
+ * clock !
  *
  * Copyright (C) 2019-2020  Sylvain Munaut <tnt@246tNt.com>
  * SPDX-License-Identifier: CERN-OHL-P-2.0

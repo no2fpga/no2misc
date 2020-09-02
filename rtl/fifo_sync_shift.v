@@ -3,7 +3,12 @@
  *
  * vim: ts=4 sw=4
  *
+ * Simple synchronous fifo using registers as storage element for
+ * very shallow FIFOs.
  *
+ * - First-Word-Fall-Thru operating mode
+ * - Safeties not included (i.e. don't read from empty or
+ *   write to full FIFO !)
  *
  * Copyright (C) 2019-2020  Sylvain Munaut <tnt@246tNt.com>
  * SPDX-License-Identifier: CERN-OHL-P-2.0
