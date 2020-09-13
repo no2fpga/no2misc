@@ -18,12 +18,12 @@ module uart_wb #(
 	input  wire uart_rx,
 
 	// Bus interface
-	input  wire [1:0] bus_addr,
-	input  wire [DW-1:0] bus_wdata,
-	output wire [DW-1:0] bus_rdata,
-	input  wire bus_cyc,
-	output wire bus_ack,
-	input  wire bus_we,
+	input  wire [1:0]    wb_addr,
+	output wire [DW-1:0] wb_rdata,
+	input  wire [DW-1:0] wb_wdata,
+	input  wire          wb_we,
+	input  wire          wb_cyc,
+	output wire          wb_ack,
 
 	// Clock / Reset
 	input  wire clk,
@@ -168,39 +168,39 @@ module uart_wb #(
 			ub_wr_data <= 1'b0;
 			ub_wr_div  <= 1'b0;
 		end else begin
-			ub_rd_data <= ~bus_we & bus_cyc & (bus_addr == 2'b00);
-			ub_rd_ctrl <= ~bus_we & bus_cyc & (bus_addr == 2'b01);
-			ub_wr_data <=  bus_we & bus_cyc & (bus_addr == 2'b00) & ~utf_full;
-			ub_wr_div  <=  bus_we & bus_cyc & (bus_addr == 2'b01);
+			ub_rd_data <= ~wb_we & wb_cyc & (wb_addr == 2'b00);
+			ub_rd_ctrl <= ~wb_we & wb_cyc & (wb_addr == 2'b01);
+			ub_wr_data <=  wb_we & wb_cyc & (wb_addr == 2'b00) & ~utf_full;
+			ub_wr_div  <=  wb_we & wb_cyc & (wb_addr == 2'b01);
 		end
 
 	always @(posedge clk)
 		if (ub_ack)
 			ub_ack <= 1'b0;
 		else
-			ub_ack <= bus_cyc & (~bus_we | (bus_addr == 2'b01) | ~utf_full);
+			ub_ack <= wb_cyc & (~wb_we | (wb_addr == 2'b01) | ~utf_full);
 
-	assign ub_rdata_rst = ub_ack | bus_we | ~bus_cyc;
+	assign ub_rdata_rst = ub_ack | wb_we | ~wb_cyc;
 
 	always @(posedge clk)
 		if (ub_rdata_rst)
 			ub_rdata <= { DW{1'b0} };
 		else
-			ub_rdata <= bus_addr[0] ?
+			ub_rdata <= wb_addr[0] ?
 				{ urf_empty, urf_overflow, utf_empty, utf_full, { (DW-DIV_WIDTH-4){1'b0} }, uart_div } :
 				{ urf_empty, { (DW-9){1'b0} }, urf_rdata };
 
 	always @(posedge clk)
 		if (ub_wr_div)
-			uart_div <= bus_wdata[DIV_WIDTH-1:0];
+			uart_div <= wb_wdata[DIV_WIDTH-1:0];
 
-	assign utf_wdata = bus_wdata[7:0];
+	assign utf_wdata = wb_wdata[7:0];
 	assign utf_wren  = ub_wr_data;
 
 	assign urf_rden  = ub_rd_data & ~ub_rdata[DW-1];
 	assign urf_overflow_clr = ub_rd_ctrl & ub_rdata[DW-2];
 
-	assign bus_rdata = ub_rdata;
-	assign bus_ack = ub_ack;
+	assign wb_rdata = ub_rdata;
+	assign wb_ack = ub_ack;
 
 endmodule // uart_wb
