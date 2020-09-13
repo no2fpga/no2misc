@@ -54,8 +54,10 @@ module fifo_sync_shift #(
 			reg l_valid;
 
 			// Data register
-			always @(posedge clk)
-				if (ce[i])
+			always @(posedge clk or posedge rst)
+				if (rst)
+					l_data <= 0;
+				else if (ce[i])
 					l_data <= valid[i+1] ? data[i+1] : wr_data;
 
 			// Valid flag
