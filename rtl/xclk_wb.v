@@ -17,21 +17,21 @@ module xclk_wb #(
 )(
 	// Slave bus interface
 	input  wire [AW-1:0] s_addr,
-	input  wire [DW-1:0] s_wdata,
 	output reg  [DW-1:0] s_rdata,
-	input  wire s_cyc,
-	output wire s_ack,
-	input  wire s_we,
-	input  wire s_clk,
+	input  wire [DW-1:0] s_wdata,
+	input  wire          s_we,
+	input  wire          s_cyc,
+	output wire          s_ack,
+	input  wire          s_clk,
 
 	// Master bus interface
 	output wire [AW-1:0] m_addr,
-	output wire [DW-1:0] m_wdata,
 	input  wire [DW-1:0] m_rdata,
-	output wire m_cyc,
-	input  wire m_ack,
-	output wire m_we,
-	input  wire m_clk,
+	output wire [DW-1:0] m_wdata,
+	output wire          m_we,
+	output wire          m_cyc,
+	input  wire          m_ack,
+	input  wire          m_clk,
 
 	// Reset
 	input  wire rst
