@@ -35,10 +35,11 @@ module uart_rx #(
 		// Glitch filter
 		if (GLITCH_FILTER > 0)
 			glitch_filter #(
-				.L(GLITCH_FILTER)
+				.L(GLITCH_FILTER),
+				.RST_VAL(1'b1),
+				.WITH_SYNCHRONIZER(1)
 			) gf_I (
-				.pin_iob_reg(rx),
-				.cond(1'b1),
+				.in(rx),
 				.val(rx_val),
 				.rise(),
 				.fall(rx_fall),

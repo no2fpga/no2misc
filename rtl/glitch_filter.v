@@ -10,10 +10,15 @@
 `default_nettype none
 
 module glitch_filter #(
-	parameter integer L = 2
+	parameter integer L = 4,
+	parameter RST_VAL = 1'b1,
+	parameter integer WITH_SYNCHRONIZER = 1,
+	parameter integer WITH_SAMP_COND = 0,
+	parameter integer WITH_EVT_COND = 0
 )(
-	input wire  pin_iob_reg,
-	input wire  cond,
+	input wire  in,
+	input wire  samp_cond,	// Sampling condition
+	input wire  evt_cond,	// Event condition
 
 	output wire val,
 	output reg  rise,
@@ -25,40 +30,60 @@ module glitch_filter #(
 	// Signals
 	wire [L-1:0] all_zero;
 	wire [L-1:0] all_one;
+	wire [L-1:0] all_rst;
 
-	reg [1:0] sync;
-	reg state;
-	reg [L-1:0] cnt;
+	wire samp_cond_i = WITH_SAMP_COND ? samp_cond : 1'b1;
+	wire evt_cond_i  = WITH_EVT_COND  ? evt_cond  : 1'b1;
+
+	reg    [1:0] sync;
+	reg          state;
+	reg  [L-1:0] cnt;
+	reg  [L-1:0] cnt_move;
+
+	wire cnt_is_all_zero;
+	wire cnt_is_all_one;
 
 	// Constants
 	assign all_zero = { L{1'b0} };
 	assign all_one  = { L{1'b1} };
+	assign all_rst  = { L{RST_VAL} };
 
 	// Synchronizer
-	always @(posedge clk)
-		sync <= { sync[0], pin_iob_reg };
+	if (WITH_SYNCHRONIZER)
+		always @(posedge clk)
+			sync <= { sync[0], in };
+	else
+		always @(*)
+			sync = { in, in };
 
 	// Filter
+	always @(*)
+	begin
+		cnt_move = all_zero;
+
+		if (samp_cond_i & sync[1] & ~cnt_is_all_one)
+			cnt_move = 1;
+		else if (samp_cond_i & ~sync[1] & ~cnt_is_all_zero)
+			cnt_move = -1;
+	end
+
 	always @(posedge clk)
 		if (rst)
-			cnt <= all_one;
-		else begin
-			if (sync[1] & (cnt != all_one))
-				cnt <= cnt + 1;
-			else if (~sync[1] & (cnt != all_zero))
-				cnt <= cnt - 1;
-			else
-				cnt <= cnt;
-		end
+			cnt <= all_rst;
+		else
+			cnt <= cnt + cnt_move;
+
+	assign cnt_is_all_zero = (cnt == all_zero);
+	assign cnt_is_all_one  = (cnt == all_one);
 
 	// State
 	always @(posedge clk)
 		if (rst)
-			state <= 1'b1;
+			state <= RST_VAL;
 		else begin
-			if (state & cnt == all_zero)
+			if (state & cnt_is_all_zero)
 				state <= 1'b0;
-			else if (~state & cnt == all_one)
+			else if (~state & cnt_is_all_one)
 				state <= 1'b1;
 			else
 				state <= state;
@@ -69,12 +94,12 @@ module glitch_filter #(
 	// Rise / Fall detection
 	always @(posedge clk)
 	begin
-		if (~cond) begin
+		if (~evt_cond_i) begin
 			rise <= 1'b0;
 			fall <= 1'b0;
 		end else begin
-			rise <= ~state & (cnt == all_one);
-			fall <=  state & (cnt == all_zero);
+			rise <= ~state & cnt_is_all_one;
+			fall <=  state & cnt_is_all_zero;
 		end
 	end
 
