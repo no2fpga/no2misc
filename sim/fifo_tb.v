@@ -75,4 +75,17 @@ module fifo_tb;
 	assign wr_ena = rnd_wr & ~wr_full;
 	assign rd_ena = rnd_rd & ~rd_empty;
 
+	// Verify
+	reg [7:0] cmp_val;
+
+	always @(posedge clk)
+		if (rst) begin
+			cmp_val <= 8'h00;
+		end else begin
+			cmp_val <= cmp_val + rd_ena;
+
+			if (~rd_empty & (rd_data != cmp_val))
+				$display("Errori @ %t", $time);
+		end
+
 endmodule // fifo_tb
