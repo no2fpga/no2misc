@@ -5,6 +5,8 @@ RTL_SRCS_no2misc = $(addprefix rtl/, \
 	fifo_sync_ram.v \
 	fifo_sync_shift.v \
 	glitch_filter.v \
+	i2c_master.v \
+	i2c_master_wb.v \
 	muacm2wb.v \
 	prims.v \
 	pdm.v \
