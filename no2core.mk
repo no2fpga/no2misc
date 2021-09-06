@@ -5,10 +5,13 @@ RTL_SRCS_no2misc = $(addprefix rtl/, \
 	fifo_sync_ram.v \
 	fifo_sync_shift.v \
 	glitch_filter.v \
+	muacm2wb.v \
 	prims.v \
 	pdm.v \
 	pwm.v \
 	ram_sdp.v \
+	stream2wb.v \
+	uart2wb.v \
 	uart_rx.v \
 	uart_tx.v \
 	uart_wb.v \
