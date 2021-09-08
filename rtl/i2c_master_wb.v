@@ -22,7 +22,7 @@ module i2c_master_wb #(
 	output reg  [31:0] wb_rdata,
 	input  wire        wb_we,
 	input  wire        wb_cyc,
-	output wire        wb_ack,
+	output reg         wb_ack,
 
 	// Clock / Reset
 	input  wire clk,
