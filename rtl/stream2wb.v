@@ -96,7 +96,7 @@ module stream2wb #(
 	always @(posedge clk)
 		cmd_stb <= rx_cnt[2] & rx_valid;
 
-    // Response output
+	// Response output
 	always @(posedge clk or posedge rst)
 		if (rst)
 			tx_cnt <= 3'd0;

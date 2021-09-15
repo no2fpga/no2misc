@@ -54,8 +54,8 @@ module muacm2wb #(
 	wire       iu_flush_now;
 	wire       iu_flush_time;
 
- 	// Output (from host) - USB domain
-    wire [7:0] ou_data;
+	// Output (from host) - USB domain
+	wire [7:0] ou_data;
 	wire       ou_last;
 	wire       ou_valid;
 	wire       ou_ready;
@@ -66,8 +66,8 @@ module muacm2wb #(
 	wire       is_valid;
 	wire       is_ready;
 
- 	// Output (from host) - System domain
-    wire [7:0] os_data;
+	// Output (from host) - System domain
+	wire [7:0] os_data;
 	wire       os_last;
 	wire       os_valid;
 	wire       os_ready;

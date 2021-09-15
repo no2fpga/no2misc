@@ -121,7 +121,7 @@ module pdm_lfsr #(
 	output reg  [WIDTH-1:0] out,
 	input  wire clk,
 	input  wire rst
- );
+);
 
 	// Signals
 	wire fb;
