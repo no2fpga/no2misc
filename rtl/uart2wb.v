@@ -11,6 +11,7 @@
 
 module uart2wb #(
 	parameter integer WB_N = 3,
+	parameter integer UART_DIV = 24, /* round(sys_clk / baud_rate) */
 
 	// auto
 	parameter integer DL = (32*WB_N)-1,
@@ -19,8 +20,6 @@ module uart2wb #(
 	// UART
 	input  wire        uart_rx,
 	output wire        uart_tx,
-
-	input  wire [ 7:0] uart_div,
 
 	// Wishbone
 	output reg  [31:0] wb_wdata,
@@ -38,6 +37,9 @@ module uart2wb #(
 	input  wire rst
 );
 
+	localparam integer DIV_WIDTH = $clog2(UART_DIV - 2);
+	localparam [DIV_WIDTH-1:0] DIV_VALUE = UART_DIV - 2;
+
 	// Signals
 	// -------
 
@@ -54,25 +56,25 @@ module uart2wb #(
 	// -----------
 
 	uart_rx #(
-		.DIV_WIDTH(8),
+		.DIV_WIDTH(DIV_WIDTH),
 		.GLITCH_FILTER(0)
 	) rx_I (
 		.rx   (uart_rx),
 		.data (rx_data),
 		.stb  (rx_stb),
-		.div  (uart_div),
+		.div  (DIV_VALUE),
 		.clk  (clk),
 		.rst  (rst)
 	);
 
 	uart_tx #(
-		.DIV_WIDTH(8)
+		.DIV_WIDTH(DIV_WIDTH)
 	) tx_I (
 		.tx    (uart_tx),
 		.data  (tx_data),
 		.valid (tx_valid),
 		.ack   (tx_ack),
-		.div   (uart_div),
+		.div   (DIV_VALUE),
 		.clk   (clk),
 		.rst   (rst)
 	);
