@@ -37,7 +37,7 @@ module uart2wb #(
 	input  wire rst
 );
 
-	localparam integer DIV_WIDTH = $clog2(UART_DIV - 2);
+	localparam integer DIV_WIDTH = $clog2(UART_DIV - 1);
 	localparam [DIV_WIDTH-1:0] DIV_VALUE = UART_DIV - 2;
 
 	// Signals
