@@ -58,6 +58,7 @@ is simply dropped and put in the response FIFO.
 
  * [31]  - rv   : Response Valid
  * [30]  - cr   : Command ready
+ * [9]   - eo   : Err Out   (Time-out occured)
  * [8]   - ao   : Ack Out   (Only for WRITE)
  * [7:0] - data : Data Byte (Only for READ)
 ```
@@ -71,6 +72,10 @@ is valid or if the command is still being executed.
 The `cr` bit indicates in both cases if a new command can be submitted safely. For non-FIFO
 mode that bit will match `rv`, and for FIFO mode, this indicates that the command FIFO is not
 full.
+
+The `eo` bit indicates that the core waited too long for SCL to rise, meaning some device
+held it low for too long. Only valid if both clock stretching support and timeout counter
+were enabled in the core build.
 
 
 ### Response peek (Read Only, addr `0x04`)

@@ -10,12 +10,15 @@
 `default_nettype none
 
 module i2c_master_wb #(
-	parameter integer DW = 3,
+	parameter integer DW = 3, // i2c_clk = sys_clk / (4 * ((1 << DW) + 1))
+	parameter integer TW = 0, // Timeout (0 = no timeout)
+	parameter integer CLOCK_STRETCH = 0,
 	parameter integer FIFO_DEPTH = 0,
 	parameter FIFO_TYPE = "shift"
 )(
 	// IOs
 	output wire scl_oe,
+	input  wire scl_i,
 	output wire sda_oe,
 	input  wire sda_i,
 
@@ -41,6 +44,7 @@ module i2c_master_wb #(
 	wire       stb;
 	wire [7:0] data_out;
 	wire       ack_out;
+	wire       err_out;
 	wire       ready;
 
 
@@ -48,9 +52,12 @@ module i2c_master_wb #(
 	// ----
 
 	i2c_master #(
-		.DW(DW)
+		.DW(DW),
+		.TW(TW),
+		.CLOCK_STRETCH(CLOCK_STRETCH)
 	) core_I (
 		.scl_oe   (scl_oe),
+		.scl_i    (scl_i),
 		.sda_oe   (sda_oe),
 		.sda_i    (sda_i),
 		.data_in  (data_in),
@@ -59,6 +66,7 @@ module i2c_master_wb #(
 		.stb      (stb),
 		.data_out (data_out),
 		.ack_out  (ack_out),
+		.err_out  (err_out),
 		.ready    (ready),
 		.clk      (clk),
 		.rst      (rst)
@@ -84,7 +92,7 @@ module i2c_master_wb #(
 			if (bus_clr)
 				wb_rdata <= 32'h00000000;
 			else
-				wb_rdata <= { ready, ready, 21'd0, ack_out, data_out };
+				wb_rdata <= { ready, ready, 20'd0, err_out, ack_out, data_out };
 
 		// Data write
 		assign cmd      = wb_wdata[13:12];
@@ -108,10 +116,10 @@ module i2c_master_wb #(
 		wire        cf_re;
 		wire        cf_empty;
 
-		wire  [8:0] rf_wdata;
+		wire  [9:0] rf_wdata;
 		wire        rf_we;
 		wire        rf_full;
-		wire  [8:0] rf_rdata;
+		wire  [9:0] rf_rdata;
 		wire        rf_re;
 		wire        rf_empty;
 
@@ -130,7 +138,7 @@ module i2c_master_wb #(
 			if (bus_clr)
 				wb_rdata <= 32'h00000000;
 			else
-				wb_rdata <= { ~rf_empty, ~cf_full, 21'd0, rf_rdata };
+				wb_rdata <= { ~rf_empty, ~cf_full, 20'd0, rf_rdata };
 
 		assign rf_re = wb_ack & ~wb_we & wb_rdata[31] & ~wb_addr[0];
 
@@ -157,6 +165,7 @@ module i2c_master_wb #(
 
 		// Responses
 		assign rf_wdata = {
+			err_out,
 			ack_out,
 			data_out
 		};
@@ -187,7 +196,7 @@ module i2c_master_wb #(
 			// Response FIFO
 			fifo_sync_shift #(
 				.DEPTH(FIFO_DEPTH),
-				.WIDTH(9)
+				.WIDTH(10)
 			) fifo_rsp_I (
 				.wr_data  (rf_wdata),
 				.wr_ena   (rf_we),
@@ -221,7 +230,7 @@ module i2c_master_wb #(
 			// Response FIFO
 			fifo_sync_ram #(
 				.DEPTH(FIFO_DEPTH),
-				.WIDTH(9)
+				.WIDTH(10)
 			) fifo_rsp_I (
 				.wr_data  (rf_wdata),
 				.wr_ena   (rf_we),

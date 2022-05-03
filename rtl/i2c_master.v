@@ -10,10 +10,13 @@
 `default_nettype none
 
 module i2c_master #(
-	parameter integer DW = 3
+	parameter integer DW = 3, // i2c_clk = sys_clk / (4 * ((1 << DW) + 1))
+	parameter integer TW = 0, // Timeout (0 = no timeout)
+	parameter integer CLOCK_STRETCH = 0
 )(
 	// IOs
 	output reg  scl_oe,
+	input  wire scl_i,
 	output reg  sda_oe,
 	input  wire sda_i,
 
@@ -25,6 +28,7 @@ module i2c_master #(
 
 	output wire [7:0] data_out,
 	output wire       ack_out,
+	output wire       err_out,
 
 	output wire ready,
 
@@ -64,6 +68,12 @@ module i2c_master #(
 
 	reg  [8:0] data_reg;
 
+	reg [TW:0] to_cnt;
+	wire       to_now;
+	reg        to_latch;
+
+	reg        scl_ir;
+
 
 	// State Machine
 	// -------------
@@ -91,7 +101,8 @@ module i2c_master #(
 
 			ST_RISE_SCL:
 				if (cyc_now)
-					state_nxt = ST_HIGH_CYCLE;
+					if (scl_ir | to_now)
+						state_nxt = ST_HIGH_CYCLE;
 
 			ST_HIGH_CYCLE:
 				if (cyc_now)
@@ -102,6 +113,7 @@ module i2c_master #(
 					state_nxt = bit_last ? ST_IDLE : ST_LOW_CYCLE;
 		endcase
 	end
+
 
 	// Misc control
 	// ------------
@@ -152,6 +164,40 @@ module i2c_master #(
 			data_reg <= cmd[0] ? { 8'b11111111, ack_in } : { data_in, 1'b1 };
 
 
+	// Time Out (for clock stretching)
+	// --------
+
+	generate
+		if ((CLOCK_STRETCH > 0) && (TW > 0)) begin
+
+			// Count cycles
+			always @(posedge clk)
+				if (cyc_now) begin
+					if (state == ST_LOW_CYCLE)
+						to_cnt <= 0;
+					else
+						to_cnt <= to_cnt + 1;
+				end
+
+			// Error latch
+			always @(posedge clk)
+				to_latch <= (to_latch | to_now) & ~stb;
+
+		end else begin
+
+			// Dummy
+			initial begin
+				to_cnt   <= 0;
+				to_latch <= 1'b0;
+			end
+
+		end
+	endgenerate
+
+	// Time out signal
+	assign to_now = to_cnt[TW];
+
+
 	// IO
 	// --
 
@@ -180,12 +226,23 @@ module i2c_master #(
 			end
 		end
 
+	generate
+		// Use input only if clock stretching is enabled
+		if (CLOCK_STRETCH == 1)
+			always @(posedge clk)
+				scl_ir <= scl_i;
+		else
+			initial
+				scl_ir <= 1'b1;
+	endgenerate
+
 
 	// User IF
 	// -------
 
 	assign data_out = data_reg[8:1];
 	assign ack_out  = data_reg[0];
+	assign err_out  = to_latch;
 
 	assign ready = (state == ST_IDLE);
 
