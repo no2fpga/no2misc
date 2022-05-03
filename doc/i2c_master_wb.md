@@ -58,7 +58,7 @@ is simply dropped and put in the response FIFO.
 
  * [31]  - rv   : Response Valid
  * [30]  - cr   : Command ready
- * [8]   - ai   : Ack Out   (Only for WRITE)
+ * [8]   - ao   : Ack Out   (Only for WRITE)
  * [7:0] - data : Data Byte (Only for READ)
 ```
 
