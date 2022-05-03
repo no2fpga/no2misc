@@ -51,18 +51,18 @@ module i2c_master #(
 	// Signals
 	// -------
 
-	reg [2:0] state;
-	reg [2:0] state_nxt;
+	reg  [2:0] state;
+	reg  [2:0] state_nxt;
 
-	reg [1:0] cmd_cur;
+	reg  [1:0] cmd_cur;
 
 	reg [DW:0] cyc_cnt;
-	wire cyc_now;
+	wire       cyc_now;
 
-	reg [3:0] bit_cnt;
-	wire bit_last;
+	reg  [3:0] bit_cnt;
+	wire       bit_last;
 
-	reg [8:0] data_reg;
+	reg  [8:0] data_reg;
 
 
 	// State Machine
