@@ -53,10 +53,11 @@ is simply dropped and put in the response FIFO.
 ,-----------------------------------------------------------------------------------------------,
 |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|12|11|10| 9| 8| 7| 6| 5| 4| 3| 2| 1| 0|
 |-----------------------------------------------------------------------------------------------|
-|rv|                           /                                     |ao|       data            |
+|rv|cr|                        /                                     |ao|       data            |
 '-----------------------------------------------------------------------------------------------'
 
  * [31]  - rv   : Response Valid
+ * [30]  - cr   : Command ready
  * [8]   - ai   : Ack Out   (Only for WRITE)
  * [7:0] - data : Data Byte (Only for READ)
 ```
@@ -66,3 +67,13 @@ and the `rv` bit indicates if the FIFO was empty or not.
 
 Without FIFO it always returns the response of the last command and `rv` indicates if that
 is valid or if the command is still being executed.
+
+The `cr` bit indicates in both cases if a new command can be submitted safely. For non-FIFO
+mode that bit will match `rv`, and for FIFO mode, this indicates that the command FIFO is not
+full.
+
+
+### Response peek (Read Only, addr `0x04`)
+
+This is the same register as `0x00` but in FIFO mode it doesn't actually de-queue the response
+(if any). This allows for instance to check if the `cr` is set or not with no side effects.

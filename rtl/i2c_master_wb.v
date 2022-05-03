@@ -20,8 +20,9 @@ module i2c_master_wb #(
 	input  wire sda_i,
 
 	// Wishbone
-	input  wire [31:0] wb_wdata,
+	input  wire [ 0:0] wb_addr,
 	output reg  [31:0] wb_rdata,
+	input  wire [31:0] wb_wdata,
 	input  wire        wb_we,
 	input  wire        wb_cyc,
 	output reg         wb_ack,
@@ -83,7 +84,7 @@ module i2c_master_wb #(
 			if (bus_clr)
 				wb_rdata <= 32'h00000000;
 			else
-				wb_rdata <= { ready, 22'd0, ack_out, data_out };
+				wb_rdata <= { ready, ready, 21'd0, ack_out, data_out };
 
 		// Data write
 		assign cmd      = wb_wdata[13:12];
@@ -129,9 +130,9 @@ module i2c_master_wb #(
 			if (bus_clr)
 				wb_rdata <= 32'h00000000;
 			else
-				wb_rdata <= { ~rf_empty, 22'd0, rf_rdata };
+				wb_rdata <= { ~rf_empty, ~cf_full, 21'd0, rf_rdata };
 
-		assign rf_re = wb_ack & ~wb_we & wb_rdata[31];
+		assign rf_re = wb_ack & ~wb_we & wb_rdata[31] & ~wb_addr[0];
 
 		// Data write
 		assign cf_wdata = {
@@ -205,7 +206,7 @@ module i2c_master_wb #(
 			// Command FIFO
 			fifo_sync_ram #(
 				.DEPTH(FIFO_DEPTH),
-				.WIDTH(11)
+				.WIDTH(12)
 			) fifo_cmd_I (
 				.wr_data  (cf_wdata),
 				.wr_ena   (cf_we),
