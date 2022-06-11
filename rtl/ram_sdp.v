@@ -26,6 +26,7 @@ module ram_sdp #(
 	input  wire clk
 );
 	// Signals
+	(* no_rw_check *)
 	reg [DWIDTH-1:0] ram [(1<<AWIDTH)-1:0];
 
 `ifdef SIM
