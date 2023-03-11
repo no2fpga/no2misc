@@ -8,7 +8,7 @@ FIFOs are included (default are 512 bytes deep)
 Memory Map
 ----------
 
-### CSR (Read/Write, addr `0x00`)
+### CSR (Read/Write, addr `0x04`)
 
 ```text
 ,-----------------------------------------------------------------------------------------------,
@@ -29,7 +29,7 @@ Notes:
   * The effective baudrate will be `sys_clk / (div + 2)`
 
 
-### TX data (Write Only, addr `0x04`)
+### TX data (Write Only, addr `0x00`)
 
 ```text
 ,-----------------------------------------------------------------------------------------------,
@@ -44,7 +44,7 @@ Notes:
 Attempts to write to a full TX FIFO will block the bus until space is available.
 
 
-### RX data (Read Only, addr `0x04`)
+### RX data (Read Only, addr `0x00`)
 
 ```text
 ,-----------------------------------------------------------------------------------------------,
