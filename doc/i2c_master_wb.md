@@ -46,6 +46,8 @@ The supported commands are :
 The `gr` bit only makes sense in FIFO mode. If it's not set, any response from the command
 is simply dropped and put in the response FIFO.
 
+The `ai` bit is the value of the ack bit itself. Meaning `0` is `ACK` and `1` is `NAK`.
+
 
 ### Response (Read Only, addr `0x00`)
 
@@ -76,6 +78,8 @@ full.
 The `eo` bit indicates that the core waited too long for SCL to rise, meaning some device
 held it low for too long. Only valid if both clock stretching support and timeout counter
 were enabled in the core build.
+
+The `ao` bit is the value of the ack bit itself. Meaning `0` is `ACK` and `1` is `NAK`.
 
 
 ### Response peek (Read Only, addr `0x04`)
