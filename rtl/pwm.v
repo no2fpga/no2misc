@@ -76,7 +76,6 @@ module pwm #(
 				.IO_STANDARD("SB_LVCMOS")
 			) io_reg_I (
 				.PACKAGE_PIN(pwm),
-				.LATCH_INPUT_VALUE(1'b0),
 				.CLOCK_ENABLE(1'b1),
 				.INPUT_CLK(1'b0),
 				.OUTPUT_CLK(clk),
